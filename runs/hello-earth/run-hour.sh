@@ -2,10 +2,11 @@
 set -euo pipefail
 
 case_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+export OMP_THREADS="${OMP_THREADS:-5}"
 source "$case_dir/env.sh"
-ranks="${MPI_RANKS:-9}"
-if [[ "$ranks" != 9 ]]; then
-  echo "This case requires 8 GAMERA ranks plus 1 VOLTRON coordinator rank (MPI_RANKS=9)." >&2
+ranks="${MPI_RANKS:-25}"
+if [[ "$ranks" != 25 ]]; then
+  echo "This case requires 24 GAMERA ranks plus 1 VOLTRON coordinator rank (MPI_RANKS=25)." >&2
   exit 2
 fi
 

@@ -8,7 +8,7 @@
     <restart dtRes="1800.0"/>
     <imag doInit="T"/>
     <ebsquish epsSquish="0.05"/>
-    <threading NumTh="4"/>
+    <threading NumTh="5"/>
   </VOLTRON>
   <Gamera>
     <sim runid="hello_earth_hour" doH5g="T" H5Grid="lfmD.h5" icType="user" pdmb="1.0" rmeth="7UP"/>
@@ -20,10 +20,10 @@
     <ringknobs doVClean="T"/>
     <wind tsfile="bcwind.h5"/>
     <source doSource="T" doWolfLim="T" doBounceDT="T" nBounce="1.0"/>
-    <iPdir N="2" bcPeriodic="F"/>
+    <iPdir N="3" bcPeriodic="F"/>
     <jPdir N="4" bcPeriodic="F"/>
-    <kPdir N="1" bcPeriodic="T"/>
-    <threading NumTh="4"/>
+    <kPdir N="2" bcPeriodic="T"/>
+    <threading NumTh="5"/>
     <coupling blockHalo="T"/>
   </Gamera>
   <CHIMP>
