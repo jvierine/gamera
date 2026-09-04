@@ -39,5 +39,18 @@ inner-magnetosphere pressure and density:
 ./make-coupling-animations.sh
 ```
 
+The purpose-built requested products are generated together with:
+
+```bash
+PLOT_CPUS=32 ./make-requested-animations.sh
+```
+
+This creates dual-plane (`x-y` and `x-z`) density with evolving meridional
+magnetic-field lines, northern convection potential with the cross-polar-cap
+potential in every frame, and dedicated northern/southern FAC maps with
+convection-potential contours. The equatorial density panel uses a `Bz=0`
+contour rather than misleading in-plane magnetic traces: terrestrial field
+lines generally leave the equatorial plane.
+
 See the repository-level `AGENTS.md` for pinned revisions, hashes from the
 validated run, build details, and scientific-use cautions.

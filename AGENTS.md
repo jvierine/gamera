@@ -121,6 +121,14 @@ Run `./make-coupling-animations.sh` for two additional products:
 related ionospheric quantities), plus `hello-earth-raiju.mp4` (RAIJU pressure,
 density, entropy, and field-volume diagnostics).
 
+Run `PLOT_CPUS=32 ./make-requested-animations.sh` for the presentation-focused
+set: `hello-earth-density-planes.mp4`,
+`hello-earth-north-convection.mp4`, `hello-earth-fac-north.mp4`, and
+`hello-earth-fac-south.mp4`. The renderer is smoke-tested. It plots density in
+SM `x-y` and `x-z`, traces the time-dependent meridional magnetic field in
+`x-z`, reports northern CPCP on each convection frame, and overlays potential
+contours on both FAC hemispheres.
+
 ## Recreating inputs
 
 The helper refuses to overwrite existing inputs:

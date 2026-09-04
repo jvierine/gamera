@@ -7,6 +7,7 @@ kaipy_revision="0028c69c52a91ff378a5798708daaba4cdfb5790"
 patch_files=(
   "$repo_dir/patches/kaipy-numpy2-scalar-conversion.patch"
   "$repo_dir/patches/kaipy-mixpic-argparse-help.patch"
+  "$repo_dir/patches/kaipy-scipy-griddata-points.patch"
 )
 
 if [[ ! -d "$kaipy_dir/.git" ]]; then

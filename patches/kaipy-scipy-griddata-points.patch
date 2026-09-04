@@ -1,0 +1,12 @@
+diff --git a/kaipy/gamera/magsphere.py b/kaipy/gamera/magsphere.py
+index 8f46f73..b2029d0 100644
+--- a/kaipy/gamera/magsphere.py
++++ b/kaipy/gamera/magsphere.py
+@@ -522,3 +522,4 @@ class GamsphPipe(GameraPipe):
+-		gu = griddata(zip(px, py), pu, (xx1, yy1), method='linear', fill_value=0.0)
+-		gv = griddata(zip(px, py), pv, (xx1, yy1), method='linear', fill_value=0.0)
+-		gM = griddata(zip(px, py), pMag, (xx1, yy1), method='linear', fill_value=0.0)
++		points = np.column_stack((px, py))
++		gu = griddata(points, pu, (xx1, yy1), method='linear', fill_value=0.0)
++		gv = griddata(points, pv, (xx1, yy1), method='linear', fill_value=0.0)
++		gM = griddata(points, pMag, (xx1, yy1), method='linear', fill_value=0.0)
