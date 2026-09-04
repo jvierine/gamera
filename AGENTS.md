@@ -94,10 +94,12 @@ Start the longer case only when intended:
 ./start-hour.sh
 ```
 
-Both scripts use 9 MPI ranks times 4 OpenMP threads (36 cores): one VOLTRON
-coordinator plus 8 GAMERA ranks. The XML domain decomposition is 2 x 4 x 1.
-`OMP_THREADS` may be adjusted; leave `MPI_RANKS=9`. Outputs go to
-`output/smoke/` and `output/hour/`. Recheck with:
+The smoke script uses 9 MPI ranks times 4 OpenMP threads (36 CPU threads): one
+VOLTRON coordinator plus 8 GAMERA ranks in a 2 x 4 x 1 decomposition. The hour
+script uses 25 ranks times 5 threads (125 CPU threads): one coordinator plus 24
+GAMERA ranks in a 3 x 4 x 2 decomposition. Leave each script's `MPI_RANKS`
+default unchanged. Outputs go to `output/smoke/` and `output/hour/`. Recheck
+with:
 
 ```bash
 ./verify-output.sh output/smoke hello_earth_smoke
