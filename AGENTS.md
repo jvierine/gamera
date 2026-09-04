@@ -74,6 +74,8 @@ The self-contained example is `runs/hello-earth/`:
 - `hello-earth-smoke.xml`: 11.5 seconds of model time for integration testing.
 - `hello-earth-hour.xml`: one hour of model time with 60-second output cadence
   for a density animation.
+- `hello-earth-24h.xml`: 24 hours of model time with 60-second output cadence;
+  its large data products live on NFS rather than in the checkout.
 
 The model advances ideal MHD with GAMERA, drives its outer boundary with the
 solar wind, couples to REMIX ionospheric electrodynamics, and uses RAIJU for
@@ -129,6 +131,25 @@ SM `x-y` and `x-z`, traces the time-dependent meridional magnetic field in
 `x-z`, reports northern CPCP on each convection frame, and overlays potential
 contours on both FAC hemispheres.
 
+### 24-hour run
+
+The 24-hour case uses the same 25-rank x 5-thread layout as the hour case and
+writes only beneath
+`/nfs/urdr/scratch/juha/gamera/hello-earth-24h/output`. It is guarded against
+overwriting an existing run and creates half-hour restart checkpoints. Prepare
+the 25-hour OMNI input once, then start and inspect the detached run with:
+
+```bash
+./prepare-24h-input.sh
+./start-24h.sh
+./status-24h.sh
+```
+
+The current input spans 2016-08-09 09:00 through 2016-08-10 09:59 UTC. OMNI
+has a genuine plasma-data gap at 09:44--12:02 UTC and an IMF gap at
+09:46--11:59 UTC on August 9; Kaipy linearly interpolates these intervals.
+Always disclose this limitation when interpreting the 24-hour experiment.
+
 ## Recreating inputs
 
 The helper refuses to overwrite existing inputs:
@@ -151,6 +172,14 @@ raijuconfig.h5              1029bb610be965fc83c5d2875b59b671dfc866a98dd7fafd22e9
 Recompute after rebuilding or regenerating inputs. A passing smoke run proves
 software integration, not scientific validity. Follow the upstream rules of
 the road and contact the developers before publication or presentation.
+
+## Publication policy
+
+This is an experimental, locally developed workflow. Never open pull requests,
+issues, or discussions against `JHUAPL/kaiju`, `JHUAPL/kaipy`, or another
+upstream project from this checkout. Keep upstream remotes fetch-only. Work may
+be retained in `jvierine/gamera`, but do not create a pull request unless the
+owner explicitly reverses this policy.
 
 ## References
 
