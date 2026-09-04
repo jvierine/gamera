@@ -97,7 +97,8 @@ Start the longer case only when intended:
 The smoke script uses 9 MPI ranks times 4 OpenMP threads (36 CPU threads): one
 VOLTRON coordinator plus 8 GAMERA ranks in a 2 x 4 x 1 decomposition. The hour
 script uses 25 ranks times 5 threads (125 CPU threads): one coordinator plus 24
-GAMERA ranks in a 3 x 4 x 2 decomposition. Leave each script's `MPI_RANKS`
+GAMERA ranks in a 3 x 8 x 1 decomposition. Ring averaging requires the
+periodic `k` direction to remain untiled. Leave each script's `MPI_RANKS`
 default unchanged. Outputs go to `output/smoke/` and `output/hour/`. Recheck
 with:
 
