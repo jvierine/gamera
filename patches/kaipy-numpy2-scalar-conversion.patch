@@ -1,0 +1,25 @@
+diff --git a/kaipy/solarWind/OMNI.py b/kaipy/solarWind/OMNI.py
+index 0323880..34ceb76 100644
+--- a/kaipy/solarWind/OMNI.py
++++ b/kaipy/solarWind/OMNI.py
+@@ -383,3 +383,3 @@ class OMNI(SolarWind):
+-            data[1] = b_gsm[0]
+-            data[2] = b_gsm[1]
+-            data[3] = b_gsm[2]
++            data[1] = np.asarray(b_gsm[0]).item()
++            data[2] = np.asarray(b_gsm[1]).item()
++            data[3] = np.asarray(b_gsm[2]).item()
+@@ -389,3 +389,3 @@ class OMNI(SolarWind):
+-            data[4] = v_gsm[0]
+-            data[5] = v_gsm[1]
+-            data[6] = v_gsm[2]
++            data[4] = np.asarray(v_gsm[0]).item()
++            data[5] = np.asarray(v_gsm[1]).item()
++            data[6] = np.asarray(v_gsm[2]).item()
+@@ -395,3 +395,3 @@ class OMNI(SolarWind):
+-            data[13] = bs_gsm[0]
+-            data[14] = bs_gsm[1]
+-            data[15] = bs_gsm[2]
++            data[13] = np.asarray(bs_gsm[0]).item()
++            data[14] = np.asarray(bs_gsm[1]).item()
++            data[15] = np.asarray(bs_gsm[2]).item()
