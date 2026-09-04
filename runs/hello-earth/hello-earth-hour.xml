@@ -21,8 +21,8 @@
     <wind tsfile="bcwind.h5"/>
     <source doSource="T" doWolfLim="T" doBounceDT="T" nBounce="1.0"/>
     <iPdir N="3" bcPeriodic="F"/>
-    <jPdir N="4" bcPeriodic="F"/>
-    <kPdir N="2" bcPeriodic="T"/>
+    <jPdir N="8" bcPeriodic="F"/>
+    <kPdir N="1" bcPeriodic="T"/>
     <threading NumTh="5"/>
     <coupling blockHalo="T"/>
   </Gamera>

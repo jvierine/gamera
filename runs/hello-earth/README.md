@@ -19,7 +19,7 @@ cd runs/hello-earth
 The smoke case advances 11.5 seconds of model time. It uses 9 MPI processes
 (one VOLTRON coordinator and eight GAMERA ranks) and four OpenMP threads per
 process, for 36 cores. The hour case uses 25 MPI processes (one coordinator and
-24 GAMERA ranks in a 3 x 4 x 2 decomposition) with five threads each, for 125
+24 GAMERA ranks in a 3 x 8 x 1 decomposition) with five threads each, for 125
 CPU threads. Generated HDF5 inputs and all simulation output are intentionally
 excluded from Git.
 
