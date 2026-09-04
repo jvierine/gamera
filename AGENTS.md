@@ -112,6 +112,12 @@ After the hour run completes, generate density frames and an MP4 with
 FFmpeg; set `PLOT_CPUS` or `FRAME_RATE` to override their defaults of 16 and
 10, respectively.
 
+Run `./make-coupling-animations.sh` for two additional products:
+`hello-earth-fac-convection-north.mp4` and
+`hello-earth-fac-convection-south.mp4` (REMIX FAC with potential contours and
+related ionospheric quantities), plus `hello-earth-raiju.mp4` (RAIJU pressure,
+density, entropy, and field-volume diagnostics).
+
 ## Recreating inputs
 
 The helper refuses to overwrite existing inputs:

@@ -29,5 +29,14 @@ finishes, render density frames in parallel and encode an MP4 with:
 ./make-density-animation.sh
 ```
 
+The coupled diagnostics are separate animations: `mixpic` shows northern and
+southern field-aligned current with ionospheric-potential contours (plus
+conductance, Joule heating, and precipitation), while `raijupic` shows RAIJU
+inner-magnetosphere pressure and density:
+
+```bash
+./make-coupling-animations.sh
+```
+
 See the repository-level `AGENTS.md` for pinned revisions, hashes from the
 validated run, build details, and scientific-use cautions.
