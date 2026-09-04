@@ -72,7 +72,8 @@ The self-contained example is `runs/hello-earth/`:
   UTC, fetched from NASA CDAWeb and transformed to GAMERA format by Kaipy.
 - `raijuconfig.h5`: RAIJU species, energy channels, and wave-loss data.
 - `hello-earth-smoke.xml`: 11.5 seconds of model time for integration testing.
-- `hello-earth-hour.xml`: one hour of model time as a starter experiment.
+- `hello-earth-hour.xml`: one hour of model time with 60-second output cadence
+  for a density animation.
 
 The model advances ideal MHD with GAMERA, drives its outer boundary with the
 solar wind, couples to REMIX ionospheric electrodynamics, and uses RAIJU for
@@ -90,7 +91,7 @@ cd ~/src/gamera/runs/hello-earth
 Start the longer case only when intended:
 
 ```bash
-./run-hour.sh
+./start-hour.sh
 ```
 
 Both scripts use 9 MPI ranks times 4 OpenMP threads (36 cores): one VOLTRON
@@ -105,6 +106,11 @@ coordinator plus 8 GAMERA ranks. The XML domain decomposition is 2 x 4 x 1.
 The validated smoke output contains 38 readable HDF5 files and the official
 Kaipy quicklook `output/smoke/qkmsphpic.png`. Regenerate that plot from the
 output directory with `msphpic -id hello_earth_smoke`.
+
+After the hour run completes, generate density frames and an MP4 with
+`./make-density-animation.sh`. It uses Kaipy's `msphpic -den -vid` renderer and
+FFmpeg; set `PLOT_CPUS` or `FRAME_RATE` to override their defaults of 16 and
+10, respectively.
 
 ## Recreating inputs
 
