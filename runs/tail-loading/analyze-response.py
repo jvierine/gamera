@@ -90,22 +90,51 @@ def process_case(case: Path, runid: str) -> list[dict]:
     return rows
 
 
+POSITIVE_RESPONSE_KEYS = (
+    "cpcp_n_kV", "cpcp_s_kV", "fac_n_peak_abs_uA_m2", "fac_s_peak_abs_uA_m2",
+    "auroral_power_n_GW", "auroral_power_s_GW",
+)
+NEGATIVE_RESPONSE_KEYS = ("dps_dst_nT", "biot_savart_dst_nT", "sml_nT", "smr_nT")
+
+
+def subtract_control(rows: list[dict], control: list[dict]) -> None:
+    for row in rows:
+        for key in POSITIVE_RESPONSE_KEYS + NEGATIVE_RESPONSE_KEYS:
+            row[f"control_delta_{key}"] = float("nan")
+        reference = min(control, key=lambda item: abs(item["time_s"] - row["time_s"]))
+        if abs(reference["time_s"] - row["time_s"]) > 2.6:
+            continue
+        for key in POSITIVE_RESPONSE_KEYS + NEGATIVE_RESPONSE_KEYS:
+            if np.isfinite(row[key]) and np.isfinite(reference[key]):
+                row[f"control_delta_{key}"] = row[key] - reference[key]
+
+
 def summarize(rows: list[dict], pulse_duration: int) -> dict:
     post = [row for row in rows if row["time_s"] >= 0]
     baseline = min(rows, key=lambda row: abs(row["time_s"]))
     summary = {"case": rows[0]["case"], "pulse_duration_s": pulse_duration}
-    for key in ("cpcp_n_kV", "cpcp_s_kV", "fac_n_peak_abs_uA_m2", "fac_s_peak_abs_uA_m2", "auroral_power_n_GW", "auroral_power_s_GW"):
+    for key in POSITIVE_RESPONSE_KEYS:
         values = np.asarray([row[key] for row in post])
         peak_index = int(np.nanargmax(values))
         summary[f"peak_{key}"] = float(values[peak_index])
         summary[f"peak_time_{key}_s"] = float(post[peak_index]["time_s"])
-        summary[f"delta_peak_{key}"] = float(values[peak_index] - baseline[key])
-    for key in ("dps_dst_nT", "biot_savart_dst_nT", "sml_nT", "smr_nT"):
+        delta_key = f"control_delta_{key}"
+        deltas = np.asarray([row.get(delta_key, row[key] - baseline[key]) for row in post])
+        delta_index = int(np.nanargmax(deltas))
+        summary[f"peak_response_{key}"] = float(deltas[delta_index])
+        summary[f"peak_response_time_{key}_s"] = float(post[delta_index]["time_s"])
+    for key in NEGATIVE_RESPONSE_KEYS:
         values = np.asarray([row[key] for row in post])
         if np.isfinite(values).any():
             index = int(np.nanargmin(values))
             summary[f"minimum_{key}"] = float(values[index])
             summary[f"minimum_time_{key}_s"] = float(post[index]["time_s"])
+            delta_key = f"control_delta_{key}"
+            deltas = np.asarray([row.get(delta_key, row[key] - baseline[key]) for row in post])
+            if np.isfinite(deltas).any():
+                delta_index = int(np.nanargmin(deltas))
+                summary[f"minimum_response_{key}"] = float(deltas[delta_index])
+                summary[f"minimum_response_time_{key}_s"] = float(post[delta_index]["time_s"])
     return summary
 
 
@@ -116,14 +145,20 @@ def main() -> None:
     manifest = json.loads((args.root / "manifest.json").read_text(encoding="utf-8"))
     analysis = args.root / "analysis"
     analysis.mkdir(exist_ok=True)
-    summaries = []
+    completed = []
     for item in manifest["cases"]:
         runid = item["case"]
         case = args.root / "cases" / runid
         if not (case / "COMPLETED").is_file():
             continue
         rows = process_case(case, runid)
-        with (analysis / f"{runid}.csv").open("w", newline="", encoding="utf-8") as stream:
+        completed.append((item, rows))
+    control = next((rows for item, rows in completed if item.get("kind") == "control"), None)
+    summaries = []
+    for item, rows in completed:
+        if control is not None and item.get("kind") != "control":
+            subtract_control(rows, control)
+        with (analysis / f"{item['case']}.csv").open("w", newline="", encoding="utf-8") as stream:
             writer = csv.DictWriter(stream, fieldnames=list(rows[0]))
             writer.writeheader()
             writer.writerows(rows)
