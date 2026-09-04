@@ -1,0 +1,7 @@
+diff --git a/kaipy/scripts/quicklook/mixpic.py b/kaipy/scripts/quicklook/mixpic.py
+index ca1f728..244b8d4 100644
+--- a/kaipy/scripts/quicklook/mixpic.py
++++ b/kaipy/scripts/quicklook/mixpic.py
+@@ -126 +126 @@ def create_command_line_parser():
+-        help="Plasmasphere density contour to show (default: %(default)/cc not shown)"
++        help="Plasmasphere density contour to show (default: %(default)s/cc not shown)"
