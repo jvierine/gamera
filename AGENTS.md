@@ -150,6 +150,17 @@ has a genuine plasma-data gap at 09:44--12:02 UTC and an IMF gap at
 09:46--11:59 UTC on August 9; Kaipy linearly interpolates these intervals.
 Always disclose this limitation when interpreting the 24-hour experiment.
 
+### Tail-loading pulse campaign
+
+`runs/tail-loading/` stages a controlled duration scan: one shared four-hour
+Bz=+5 nT spinup, an unpulsed control, and Bz=-5 nT pulses of 10, 30, 60, 120,
+240, 600, 1200, 1800, 3600, and 7200 seconds followed by four hours at +5 nT.
+Large inputs and outputs live under
+`/nfs/urdr/scratch/juha/gamera/tail-loading-pulses`. Read its `README.md` and
+local `AGENTS.md` before operating it. Do not start it concurrently with the
+24-hour hello-Earth run. Run the control and 10-second pilot first, verify
+restart fidelity and storage rate, then resume the remaining branches.
+
 ## Recreating inputs
 
 The helper refuses to overwrite existing inputs:

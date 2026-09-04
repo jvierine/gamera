@@ -1,0 +1,29 @@
+{
+  "data_root": "/nfs/urdr/scratch/juha/gamera/tail-loading-pulses",
+  "epoch_utc": "2016-03-20T12:00:00Z",
+  "northward_spinup_s": 14400,
+  "recovery_s": 14400,
+  "include_unpulsed_control": true,
+  "pulse_durations_s": [10, 30, 60, 120, 240, 600, 1200, 1800, 3600, 7200],
+  "solar_wind": {
+    "density_cm3": 5.0,
+    "temperature_K": 100000.0,
+    "vx_km_s": -400.0,
+    "vy_km_s": 0.0,
+    "vz_km_s": 0.0,
+    "bx_nT": 0.0,
+    "by_nT": 0.0,
+    "northward_bz_nT": 5.0,
+    "pulse_bz_nT": -5.0,
+    "dipole_tilt_rad": 0.0
+  },
+  "cadence_s": {
+    "wind": 1,
+    "output": 5,
+    "console": 60,
+    "coupling": 2,
+    "restart": 1800
+  },
+  "mpi_ranks": 25,
+  "openmp_threads": 5
+}
