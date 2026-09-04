@@ -13,6 +13,7 @@ From the repository root on avaruus:
 cd runs/hello-earth
 ./prepare-inputs.sh
 ./run-smoke.sh
+./start-hour.sh
 ```
 
 The smoke case advances 11.5 seconds of model time. It uses 9 MPI processes
@@ -20,6 +21,13 @@ The smoke case advances 11.5 seconds of model time. It uses 9 MPI processes
 process, for 36 cores. `run-hour.sh` uses the same layout for a one-hour model
 experiment. Generated HDF5 inputs and all simulation output are intentionally
 excluded from Git.
+
+The hour case writes plasma state every 60 seconds of model time. After it
+finishes, render density frames in parallel and encode an MP4 with:
+
+```bash
+./make-density-animation.sh
+```
 
 See the repository-level `AGENTS.md` for pinned revisions, hashes from the
 validated run, build details, and scientific-use cautions.

@@ -3,7 +3,7 @@
   <VOLTRON>
     <time tFin="3600.0"/>
     <spinup doSpin="T" tSpin="3600.0"/>
-    <output dtOut="300.0" dtCon="60.0"/>
+    <output dtOut="60.0" dtCon="60.0"/>
     <coupling dtCouple="5.0" imType="RAIJU" doQkSquish="T" qkSquishStride="2" doAsyncCoupling="F"/>
     <restart dtRes="1800.0"/>
     <imag doInit="T"/>
