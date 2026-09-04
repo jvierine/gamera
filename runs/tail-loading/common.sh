@@ -5,13 +5,13 @@ case_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 export KAIJUHOME="$(cd -- "$case_dir/../.." && pwd)"
 export PATH="$KAIJUHOME/.venv/bin:$KAIJUHOME/build_mpi/bin:$KAIJUHOME/build_serial/bin:$PATH"
 export OMP_STACKSIZE="${OMP_STACKSIZE:-128M}"
-export OMP_NUM_THREADS="${OMP_THREADS:-5}"
+export OMP_NUM_THREADS="${OMP_THREADS:-2}"
 export MPLBACKEND="${MPLBACKEND:-Agg}"
 data_root="${GAMERA_TAIL_DATA_ROOT:-/nfs/urdr/scratch/juha/gamera/tail-loading-pulses}"
 ranks="${MPI_RANKS:-25}"
 
-if [[ "$ranks" != 25 || "$OMP_NUM_THREADS" != 5 ]]; then
-  echo "Campaign design requires MPI_RANKS=25 and OMP_THREADS=5 (125 CPU threads)." >&2
+if [[ "$ranks" != 25 || "$OMP_NUM_THREADS" != 2 ]]; then
+  echo "Campaign design requires MPI_RANKS=25 and OMP_THREADS=2 (50 CPU threads)." >&2
   exit 2
 fi
 for input in "$case_dir/../hello-earth/lfmD.h5" "$case_dir/../hello-earth/raijuconfig.h5"; do

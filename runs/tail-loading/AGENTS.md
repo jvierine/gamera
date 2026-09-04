@@ -3,7 +3,7 @@
 - Read `README.md` and `campaign.json` before changing or running anything.
 - Large data belong in `/nfs/urdr/scratch/juha/gamera/tail-loading-pulses`.
 - Never run concurrently with the hello-Earth 24-hour run.
-- Use 25 MPI ranks x 5 OpenMP threads. Compiler builds remain limited to
+- Use 25 MPI ranks x 2 OpenMP threads (50 CPU threads). Compiler builds remain limited to
   `make -j 50`; runtime parallelism is separate.
 - Run the shared four-hour northward baseline once. Preserve its complete
   `00000` restart set; every duration case must branch from exactly that set.

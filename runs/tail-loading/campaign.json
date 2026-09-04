@@ -25,5 +25,5 @@
     "restart": 1800
   },
   "mpi_ranks": 25,
-  "openmp_threads": 5
+  "openmp_threads": 2
 }

@@ -48,7 +48,8 @@ developers.
 - velocity (-400, 0, 0) km/s;
 - IMF Bx=By=0, Bz=+5 nT except during a Bz=-5 nT pulse;
 - zero dipole tilt, F10.7=100, and one-second wind samples;
-- 24 GAMERA ranks plus one VOLTRON coordinator, each with five OpenMP threads;
+- 24 GAMERA ranks plus one VOLTRON coordinator, each with two OpenMP threads
+  (50 CPU threads total);
 - two-second model coupling and five-second science output.
 
 The one-second wind cadence represents the shortest pulse with ten full-value
