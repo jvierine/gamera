@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#061017">
+  <title>GAMERA · magnetosphere–ionosphere currents</title>
+  <link rel="stylesheet" href="style.css">
+  <script type="importmap">{"imports":{"three":"../currents/vendor/three.module.js","three/addons/controls/OrbitControls.js":"../currents/vendor/OrbitControls.js"}}</script>
+</head>
+<body>
+<main>
+  <header>
+    <p class="eyebrow">GAMERA + REMIX · 24-HOUR MAGE RUN</p>
+    <h1>Modeled currents</h1>
+    <p class="subtitle">Magnetospheric current density and ionospheric field-aligned current</p>
+  </header>
+  <div id="viewport" role="img" aria-label="Interactive three-dimensional GAMERA magnetospheric current vectors and REMIX field-aligned currents"></div>
+  <aside class="panel">
+    <div class="time-block">
+      <span class="eyebrow">MODEL TIME</span>
+      <strong id="timestamp">Loading run…</strong>
+      <span id="elapsed" class="mono"></span>
+    </div>
+    <input id="time" type="range" min="0" max="0" value="0" aria-label="Model time">
+    <div class="buttons"><button id="play">Play</button><button id="reset">Reset view</button></div>
+    <div class="buttons views"><button data-view="global">Global</button><button data-view="north">North</button><button data-view="south">South</button><button data-view="tail">Tail</button></div>
+
+    <h2>Model layers</h2>
+    <label class="row"><input id="mhd" type="checkbox" checked><i class="swatch current"></i><span>GAMERA current vectors</span></label>
+    <label class="row"><input id="fac-north" type="checkbox" checked><i class="swatch fac"></i><span>REMIX FAC · north</span></label>
+    <label class="row"><input id="fac-south" type="checkbox" checked><i class="swatch fac"></i><span>REMIX FAC · south</span></label>
+    <label class="row"><input id="grid" type="checkbox" checked><i class="swatch grid"></i><span>SM coordinates</span></label>
+
+    <label class="slider-label" for="threshold"><span>Vector threshold</span><output id="threshold-value">8% of p99</output></label>
+    <input id="threshold" type="range" min="0" max="50" value="8">
+    <label class="slider-label" for="scale"><span>Vector length</span><output id="scale-value">1.0×</output></label>
+    <input id="scale" type="range" min="25" max="250" value="100">
+
+    <div class="legend"><span><i class="low"></i>low |J|</span><span><i class="high"></i>high |J|</span></div>
+    <div class="legend fac-legend"><span><i class="inward"></i>FAC inward</span><span><i class="outward"></i>FAC outward</span></div>
+    <dl class="metrics"><div><dt>J p99</dt><dd id="j-p99">—</dd></div><div><dt>FAC |p99|</dt><dd id="fac-p99">—</dd></div><div><dt>CPCP N / S</dt><dd id="cpcp">—</dd></div></dl>
+
+    <details>
+      <summary>Run &amp; provenance</summary>
+      <p>This is sampled numerical output, not the illustrative circuits in <a href="../currents/">the idealized viewer</a>. Vector direction is conventional current. Vector length and color use a per-frame nonlinear display scale; read values from the metrics, not arrow length.</p>
+      <p>GAMERA current density is in solar-magnetic Cartesian coordinates. REMIX FAC is mapped to the Apex ionosphere; red is outward from the ionosphere and blue is inward. Browser frames are sampled every 15 minutes from the completed <code>hello_earth_24h</code> run.</p>
+      <p class="warning">The driving OMNI record contains a plasma-data gap from 09:44–12:02 UTC and an IMF gap from 09:46–11:59 UTC on 9 August 2016. Kaipy linearly interpolated those intervals.</p>
+      <p>MAGE/GAMERA revision <code>3382b1f2</code>. <a href="gcurrents.h5">Download sampled HDF5</a> · <a href="manifest.json">browser manifest</a> · <a href="export_gcurrents.py">generation script</a></p>
+    </details>
+  </aside>
+  <div id="status" aria-live="polite">Loading GAMERA currents…</div>
+  <footer><span>Drag to orbit · scroll/pinch to zoom</span><span>SM · +X Sun · +Y dusk · +Z north · R<sub>E</sub> = 6,371 km</span></footer>
+</main>
+<script type="module" src="app.js?v=1"></script>
+</body>
+</html>
