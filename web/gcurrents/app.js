@@ -103,6 +103,7 @@ async function loadSnapshot(index){
 $('#time').addEventListener('input',event=>loadSnapshot(+event.target.value));
 $('#seed-group').onchange=()=>selectPath(-1);$('#path-choice').onchange=e=>selectPath(+e.target.value);
 $('#path-count').oninput=e=>{$('#path-count-value').textContent=e.target.value;pathVisibility();};
+$('#ring-view').onclick=()=>{$('#seed-group').value='ring';$('#path-count').value=12;$('#path-count-value').textContent='12';selectPath(-1);controls.target.set(0,0,0);camera.position.set(14,16,15);controls.update();};
 $('#focus-path').onclick=()=>{const item=pathObjects.find(p=>p.record.id===selectedPath);if(!item)return;const box=new THREE.Box3().setFromObject(item.mesh);box.expandByPoint(new THREE.Vector3(-2.2,-2.2,-2.2));box.expandByPoint(new THREE.Vector3(2.2,2.2,2.2));const center=box.getCenter(new THREE.Vector3()),size=box.getSize(new THREE.Vector3()).length();const direction=camera.position.clone().sub(controls.target).normalize();controls.target.copy(center);camera.position.copy(center).addScaledVector(direction,Math.max(8,size*1.6));controls.update();};
 $('#follow-inner').onclick=()=>{const choices=snapshotData?.paths.filter(p=>p.start==='inner boundary'&&p.end==='inner boundary').sort((a,b)=>a.length-b.length)||[];const p=choices[0]||snapshotData?.paths.find(p=>p.group==='r1'||p.group==='r2');if(p){selectPath(p.id);$('#focus-path').click();}};
 const raycaster=new THREE.Raycaster();let pointerStart;
@@ -117,5 +118,5 @@ let lastTime=performance.now();function animate(now){const dt=Math.min(.05,(now-
 
 let facPositions;
 Promise.all([fetch('manifest.json').then(response=>{if(!response.ok)throw Error(`manifest HTTP ${response.status}`);return response.json();})]).then(async values=>{
-  manifest=values[0];[positions,facPositions,snapshots]=await Promise.all([binary(manifest.positions),binary(manifest.fac_positions),fetch('snapshots.json?v=current-families-3').then(r=>r.json())]);$('#time').max=snapshots.length-1;$('#time').value=1;setupGeometry();await loadSnapshot(1);
+  manifest=values[0];[positions,facPositions,snapshots]=await Promise.all([binary(manifest.positions),binary(manifest.fac_positions),fetch('snapshots.json?v=current-families-3').then(r=>r.json())]);$('#time').max=snapshots.length-1;$('#time').value=1;setupGeometry();await loadSnapshot(1);if(new URLSearchParams(location.search).get('group')==='ring')$('#ring-view').click();
 }).catch(error=>{$('#status').textContent=`Unable to load GAMERA product: ${error.message}`;console.error(error);});
