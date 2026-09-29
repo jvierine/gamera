@@ -1,8 +1,8 @@
 # GAMERA + REMIX current viewer
 
 `gcurrents` is the numerical counterpart to the schematic viewer at
-`https://juha.no/currents/`. It displays sampled GAMERA volume-current vectors
-and REMIX field-aligned current from the completed 24-hour `hello_earth_24h`
+`https://juha.no/currents/`. It displays frozen GAMERA current streamlines,
+optional sampled vectors, and REMIX FAC from the completed 24-hour `hello_earth_24h`
 MAGE run on Avaruus.
 
 The authoritative compact data product is `gcurrents.h5`. Browser `.bin` files
@@ -33,7 +33,7 @@ from sibling route `/currents/vendor/`.
 
 The default view holds the 12-hour snapshot fixed and animates direction
 markers along J streamlines. Snapshots at 6 and 18 hours are also selectable.
-Only two paths per seed region are shown initially. Clicking a path isolates
+Five paths per seed region are shown initially, adjustable up to 40. Clicking a path isolates
 it; the follow-inner button selects a boundary-to-boundary path when available.
 
 `export_snapshots.py` reads every cell centre in the selected volume from the
@@ -45,3 +45,10 @@ magnetic field lines and are not time trajectories of individual particles.
 Their endpoints and seed groups are explicit. The interpolation is not
 divergence-preserving and does not prove exact current closure. No path is
 invented between the MHD cutoff at 2.2 RE and the REMIX ionosphere.
+
+Seed families include dayside (up to 20), tail (40), westward J in the ring
+region (32), R1-like (32) and R2-like (32). Spatial sectors are interleaved
+so low display counts include both flanks and hemispheres. R1/R2-like denotes
+the conventional radial-current sense at the seed, within stated latitude
+windows on the MHD shell; it is not a unique system decomposition. Ring-region
+paths use GAMERA J and do not separately reconstruct RAIJU particle currents.

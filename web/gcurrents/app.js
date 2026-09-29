@@ -21,8 +21,8 @@ for(const r of [5,10,20,30,40]){const pts=[];for(let j=0;j<=160;j++)pts.push([r*
 let manifest,positions,current,fac,frameIndex=0,loadToken=0,loading=false,playing=true;
 let snapshots=[],snapshotData,pathObjects=[],markers=[],selectedPath=-1,phase=0;
 const pathsGroup=new THREE.Group();scene.add(pathsGroup);
-const pathColors={dayside:0x4ddf94,tail:0x68adff,inner:0xff6c77};
-const groupNames={dayside:'Dayside seeds',tail:'Tail seeds',inner:'Inner-boundary seeds'};
+const pathColors={dayside:0x4ddf94,tail:0x68adff,ring:0xe68de8,r1:0xff6c77,r2:0x53e3d3};
+const groupNames={dayside:'Dayside',tail:'Tail',ring:'Ring region · westward J',r1:'R1-like seeds',r2:'R2-like seeds'};
 const arrowUp=new THREE.Vector3(0,1,0);
 let currentLines,facNorth,facSouth;
 const currentMaterial=new THREE.LineBasicMaterial({vertexColors:true,transparent:true,opacity:.82});
@@ -75,7 +75,8 @@ function pathVisibility(){
   for(const m of markers)m.arrow.visible=shown.has(m.id);
   $('#focus-path').disabled=selectedPath<0;
   const record=snapshotData?.paths.find(p=>p.id===selectedPath);
-  $('#status').textContent=record?`${groupNames[record.group]} · path ${record.id+1} · ${record.length.toFixed(1)} Rᴇ · ${record.start} → ${record.end}`:'Frozen GAMERA J · arrows show conventional-current direction · click a path to isolate it';
+  for(const option of $('#path-choice').options)option.hidden=option.value!=='-1'&&group!=='all'&&option.dataset.group!==group;
+  $('#status').textContent=record?`${groupNames[record.group]} · path ${record.id+1} · ${record.length.toFixed(1)} Rᴇ · ${record.start} → ${record.end}`:`${shown.size} visible / ${snapshotData?.paths.length??0} traced paths · frozen GAMERA J · click a path to isolate it`;
 }
 function selectPath(id){selectedPath=id;$('#path-choice').value=String(id);pathVisibility();}
 function buildPaths(record){
@@ -88,14 +89,14 @@ function buildPaths(record){
     mesh.userData.pathId=p.id;pathsGroup.add(mesh);pathObjects.push({mesh,curve,record:p});
     const count=Math.max(2,Math.min(12,Math.ceil(p.length/6)));
     for(let i=0;i<count;i++){const arrow=new THREE.Mesh(new THREE.ConeGeometry(.16,.52,8),new THREE.MeshBasicMaterial({color:pathColors[p.group]}));pathsGroup.add(arrow);markers.push({arrow,curve,offset:i/count,id:p.id,group:p.group});}
-    const option=document.createElement('option');option.value=p.id;option.textContent=`${groupNames[p.group]} · ${p.id+1}${p.start==='inner boundary'&&p.end==='inner boundary'?' · boundary ↔ boundary':''}`;$('#path-choice').append(option);
+    const option=document.createElement('option');option.value=p.id;option.dataset.group=p.group;option.textContent=`${groupNames[p.group]} · ${p.id+1}${p.start==='inner boundary'&&p.end==='inner boundary'?' · boundary ↔ boundary':''}`;$('#path-choice').append(option);
   }
   pathVisibility();
 }
 let snapshotToken=0;
 async function loadSnapshot(index){
   const token=++snapshotToken;$('#status').textContent='Tracing data loading…';
-  try{const response=await fetch(snapshots[index].file);if(!response.ok)throw Error(`paths HTTP ${response.status}`);const record=await response.json();if(token!==snapshotToken)return;
+  try{const response=await fetch(snapshots[index].file+'?v=current-families-3');if(!response.ok)throw Error(`paths HTTP ${response.status}`);const record=await response.json();if(token!==snapshotToken)return;
     await loadFrame(record.frame);if(token!==snapshotToken)return;snapshotData=record;buildPaths(record);
   }catch(error){$('#status').textContent=`Unable to load paths: ${error.message}`;console.error(error);}
 }
@@ -103,7 +104,7 @@ $('#time').addEventListener('input',event=>loadSnapshot(+event.target.value));
 $('#seed-group').onchange=()=>selectPath(-1);$('#path-choice').onchange=e=>selectPath(+e.target.value);
 $('#path-count').oninput=e=>{$('#path-count-value').textContent=e.target.value;pathVisibility();};
 $('#focus-path').onclick=()=>{const item=pathObjects.find(p=>p.record.id===selectedPath);if(!item)return;const box=new THREE.Box3().setFromObject(item.mesh);box.expandByPoint(new THREE.Vector3(-2.2,-2.2,-2.2));box.expandByPoint(new THREE.Vector3(2.2,2.2,2.2));const center=box.getCenter(new THREE.Vector3()),size=box.getSize(new THREE.Vector3()).length();const direction=camera.position.clone().sub(controls.target).normalize();controls.target.copy(center);camera.position.copy(center).addScaledVector(direction,Math.max(8,size*1.6));controls.update();};
-$('#follow-inner').onclick=()=>{const choices=snapshotData?.paths.filter(p=>p.start==='inner boundary'&&p.end==='inner boundary').sort((a,b)=>a.length-b.length)||[];const p=choices[0]||snapshotData?.paths.find(p=>p.group==='inner');if(p){selectPath(p.id);$('#focus-path').click();}};
+$('#follow-inner').onclick=()=>{const choices=snapshotData?.paths.filter(p=>p.start==='inner boundary'&&p.end==='inner boundary').sort((a,b)=>a.length-b.length)||[];const p=choices[0]||snapshotData?.paths.find(p=>p.group==='r1'||p.group==='r2');if(p){selectPath(p.id);$('#focus-path').click();}};
 const raycaster=new THREE.Raycaster();let pointerStart;
 renderer.domElement.addEventListener('pointerdown',e=>pointerStart=[e.clientX,e.clientY]);
 renderer.domElement.addEventListener('pointerup',e=>{if(!pointerStart||Math.hypot(e.clientX-pointerStart[0],e.clientY-pointerStart[1])>5)return;const r=renderer.domElement.getBoundingClientRect();raycaster.setFromCamera(new THREE.Vector2(2*(e.clientX-r.left)/r.width-1,1-2*(e.clientY-r.top)/r.height),camera);const hit=raycaster.intersectObjects(pathObjects.filter(p=>p.mesh.visible).map(p=>p.mesh))[0];if(hit)selectPath(hit.object.userData.pathId);});
@@ -116,5 +117,5 @@ let lastTime=performance.now();function animate(now){const dt=Math.min(.05,(now-
 
 let facPositions;
 Promise.all([fetch('manifest.json').then(response=>{if(!response.ok)throw Error(`manifest HTTP ${response.status}`);return response.json();})]).then(async values=>{
-  manifest=values[0];[positions,facPositions,snapshots]=await Promise.all([binary(manifest.positions),binary(manifest.fac_positions),fetch('snapshots.json').then(r=>r.json())]);$('#time').max=snapshots.length-1;$('#time').value=1;setupGeometry();await loadSnapshot(1);
+  manifest=values[0];[positions,facPositions,snapshots]=await Promise.all([binary(manifest.positions),binary(manifest.fac_positions),fetch('snapshots.json?v=current-families-3').then(r=>r.json())]);$('#time').max=snapshots.length-1;$('#time').value=1;setupGeometry();await loadSnapshot(1);
 }).catch(error=>{$('#status').textContent=`Unable to load GAMERA product: ${error.message}`;console.error(error);});

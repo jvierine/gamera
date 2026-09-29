@@ -38,16 +38,39 @@ def integrate(field,seeds,sign,step=.12,nsteps=750):
 
 def choose_seeds(p,j):
     r=np.linalg.norm(p,axis=1);mag=np.linalg.norm(j,axis=1)
+    latitude=np.rad2deg(np.arcsin(p[:,2]/r))
+    radial=np.sum(p*j,axis=1)/r
+    rho=np.hypot(p[:,0],p[:,1])
+    azimuthal=(p[:,0]*j[:,1]-p[:,1]*j[:,0])/np.maximum(rho,1e-12)
+    flank=abs(p[:,1])>.45*rho
+    inner=(r>2.4)&(r<3.3)&flank&(abs(radial)>.35*mag)
+    # Operational seed classes, not a decomposition of the numerical J.
+    # R1: outward dusk / inward dawn. R2: the opposite sense. Latitude
+    # windows are at the MHD shell, not ionospheric invariant latitude.
     masks={'dayside':(p[:,0]>6)&(p[:,0]<13)&(r<17),
-           'tail':(p[:,0]<-7)&(p[:,0]>-24)&(abs(p[:,2])<1.5)&(abs(p[:,1])<8),
-           'inner':(r>2.6)&(r<4.5)&(abs(p[:,2])>1.3)}
+           'tail':(p[:,0]<-7)&(p[:,0]>-29)&(abs(p[:,2])<2)&(abs(p[:,1])<15),
+           'ring':(r>3)&(r<8)&(abs(p[:,2])<1.3)&(azimuthal<-.35*mag),
+           'r1':inner&(abs(latitude)>45)&(abs(latitude)<78)&(radial*p[:,1]>0),
+           'r2':inner&(abs(latitude)>20)&(abs(latitude)<65)&(radial*p[:,1]<0)}
+    limits={'dayside':20,'tail':40,'ring':32,'r1':32,'r2':32}
+    spacing={'dayside':2.3,'tail':1.8,'ring':.75,'r1':.38,'r2':.38}
     seeds=[];groups=[]
     for group,mask in masks.items():
         candidates=np.flatnonzero(mask);candidates=candidates[np.argsort(mag[candidates])[::-1]]
+        # Interleave spatial sectors so the first few visible paths already
+        # cover both hemispheres/flanks, instead of one strongest-current patch.
+        if group=='tail':sector=np.floor((p[:,0]+29)/6).astype(int)*2+(p[:,1]>0)
+        elif group=='ring':sector=np.floor((np.arctan2(p[:,1],p[:,0])+np.pi)*4/np.pi).astype(int)
+        else:sector=(p[:,1]>0).astype(int)*2+(p[:,2]>0)
+        queues=[list(candidates[sector[candidates]==s]) for s in np.unique(sector[candidates])]
         chosen=[]
-        for idx in candidates:
-            if all(np.linalg.norm(p[idx]-p[k])>(1.2 if group=='inner' else 3.) for k in chosen):chosen.append(idx)
-            if len(chosen)==10:break
+        while any(queues) and len(chosen)<limits[group]:
+            for queue in queues:
+                while queue:
+                    idx=queue.pop(0)
+                    if all(np.linalg.norm(p[idx]-p[k])>spacing[group] for k in chosen):
+                        chosen.append(idx);break
+                if len(chosen)==limits[group]:break
         seeds.extend(p[chosen]);groups.extend([group]*len(chosen))
     return np.asarray(seeds),groups
 
@@ -71,7 +94,9 @@ def main():
                 length=np.linalg.norm(np.diff(p,axis=0),axis=1).sum()
                 ds=og.create_dataset(str(i),data=np.column_stack([p,values]),compression='gzip')
                 ds.attrs['seed_group']=group;ds.attrs['start']=br[i];ds.attrs['end']=fr[i]
+                ds.attrs['seed_position']=seeds[i]
                 record['paths'].append(dict(id=i,group=group,points=np.round(p,4).tolist(),
+                    seed=np.round(seeds[i],5).tolist(),
                     magnitude=np.round(np.linalg.norm(values,axis=1),3).tolist(),
                     length=round(float(length),2),start=br[i],end=fr[i]))
             filename=f'paths-{hours:02d}.json'

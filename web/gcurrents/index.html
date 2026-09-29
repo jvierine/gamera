@@ -30,9 +30,9 @@
     <h2>Follow a path</h2>
     <button id="follow-inner">Follow an inner-boundary path</button>
     <label for="seed-group">Seed region</label>
-    <select id="seed-group"><option value="all">All regions</option><option value="dayside">Green · dayside</option><option value="tail">Blue · tail</option><option value="inner">Red · inner boundary</option></select>
+    <select id="seed-group"><option value="all">All regions</option><option value="dayside">Green · dayside</option><option value="tail">Blue · tail current region</option><option value="ring">Purple · ring region / westward J</option><option value="r1">Red · R1-like seeds</option><option value="r2">Turquoise · R2-like seeds</option></select>
     <label for="path-choice">Isolate a current path</label><select id="path-choice"><option value="-1">All paths</option></select>
-    <label class="slider-label" for="path-count"><span>Paths per region</span><output id="path-count-value">2</output></label><input id="path-count" type="range" min="1" max="10" value="2">
+    <label class="slider-label" for="path-count"><span>Paths per region</span><output id="path-count-value">5</output></label><input id="path-count" type="range" min="1" max="40" value="5">
     <button id="focus-path">Focus selected path</button>
     <p class="note">Click a curve to highlight its whole path. Colors identify seed regions; paths follow the model through other regions.</p>
     <h2>Context layers</h2>
@@ -55,6 +55,7 @@
       <p>Continuous curves integrate d<b>r</b>/ds = <b>J</b>/|<b>J</b>| through a frozen GAMERA snapshot, using all 104,206 cell centres in the extracted volume. Linear tetrahedral interpolation and a 0.12 R<sub>E</sub> RK4 step define the displayed paths. Moving arrows show conventional-current direction, with illustrative speed.</p>
       <p>The MHD inner boundary prevents tracing these paths into the ionosphere. Curves stop at 2.2 R<sub>E</sub>, weak current, the sampled boundary, a near return to the seed, or the length limit. Endpoints are shown when selecting a path. Interpolation does not enforce divergence-free J, so these paths are a visualization rather than proof of exact current closure. Compare with <a href="../currents/">the idealized circuits</a>.</p>
       <p><a href="current_paths.h5">Traced paths (HDF5)</a> · <a href="snapshots.h5">Full-resolution snapshot samples (HDF5)</a> · <a href="trace_snapshots.py">Path integration script</a></p>
+      <p>Seed groups help explore the current, rather than uniquely classify entire paths. R1-like seeds select outward dusk / inward dawn current at high latitude on the MHD shell; R2-like seeds select the opposite direction at lower latitude. Purple paths start in westward J at 3–8 R<sub>E</sub>. These use GAMERA J, not a separate reconstruction of the full energetic-particle ring current.</p>
       <p>GAMERA current density is in solar-magnetic Cartesian coordinates. REMIX FAC is mapped to the Apex ionosphere; red is outward from the ionosphere and blue is inward. Browser frames are sampled every 15 minutes from the completed <code>hello_earth_24h</code> run.</p>
       <p class="warning">The driving OMNI record contains a plasma-data gap from 09:44–12:02 UTC and an IMF gap from 09:46–11:59 UTC on 9 August 2016. Kaipy linearly interpolated those intervals.</p>
       <p>MAGE/GAMERA revision <code>3382b1f2</code>. <a href="gcurrents.h5">Download sampled HDF5</a> · <a href="manifest.json">browser manifest</a> · <a href="export_gcurrents.py">generation script</a></p>
@@ -63,6 +64,6 @@
   <div id="status" aria-live="polite">Loading GAMERA currents…</div>
   <footer><span>Drag to orbit · scroll/pinch to zoom</span><span>SM · +X Sun · +Y dusk · +Z north · R<sub>E</sub> = 6,371 km</span></footer>
 </main>
-<script type="module" src="app.js?v=frozen-paths-2"></script>
+<script type="module" src="app.js?v=current-families-3"></script>
 </body>
 </html>
