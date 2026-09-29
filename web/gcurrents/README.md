@@ -29,3 +29,19 @@ This limitation must remain visible in any interpretation of the run.
 
 Serve this directory at `/gcurrents/`. It imports the vendored Three.js build
 from sibling route `/currents/vendor/`.
+# Frozen current paths
+
+The default view holds the 12-hour snapshot fixed and animates direction
+markers along J streamlines. Snapshots at 6 and 18 hours are also selectable.
+Only two paths per seed region are shown initially. Clicking a path isolates
+it; the follow-inner button selects a boundary-to-boundary path when available.
+
+`export_snapshots.py` reads every cell centre in the selected volume from the
+24 MPI rank files (no strides), writing `snapshots.h5`. `trace_snapshots.py`
+uses linear Delaunay interpolation and RK4 with ds=0.12 RE, retaining positions
+and J in `current_paths.h5`; JSON files are browser transports. Run both with
+the base conda Python environment. Three-dimensional J streamlines are not
+magnetic field lines and are not time trajectories of individual particles.
+Their endpoints and seed groups are explicit. The interpolation is not
+divergence-preserving and does not prove exact current closure. No path is
+invented between the MHD cutoff at 2.2 RE and the REMIX ionosphere.
