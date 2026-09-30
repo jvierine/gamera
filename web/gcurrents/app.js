@@ -3,9 +3,9 @@ import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
 
 const $=selector=>document.querySelector(selector),viewport=$('#viewport');
 const scene=new THREE.Scene();scene.background=new THREE.Color(0x061017);scene.fog=new THREE.FogExp2(0x061017,.006);
-const camera=new THREE.PerspectiveCamera(42,1,.05,300);camera.up.set(0,0,1);
-const renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});renderer.setPixelRatio(Math.min(devicePixelRatio,2));viewport.append(renderer.domElement);
-const controls=new OrbitControls(camera,renderer.domElement);controls.enableDamping=true;controls.minDistance=2;controls.maxDistance=150;
+const camera=new THREE.PerspectiveCamera(42,1,.05,600);camera.up.set(0,0,1);
+const renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});renderer.setPixelRatio(Math.min(devicePixelRatio,matchMedia('(pointer: coarse)').matches?1.5:2));viewport.append(renderer.domElement);
+const controls=new OrbitControls(camera,renderer.domElement);controls.enableDamping=true;controls.minDistance=2;controls.maxDistance=350;
 scene.add(new THREE.AmbientLight(0x86aebb,1.3));const sunlight=new THREE.DirectionalLight(0xdff5ff,2.2);sunlight.position.set(18,-4,7);scene.add(sunlight);
 const earth=new THREE.Mesh(new THREE.SphereGeometry(1,64,40),new THREE.MeshPhongMaterial({color:0x123c53,emissive:0x03131b,shininess:25}));scene.add(earth);
 const glow=new THREE.Mesh(new THREE.SphereGeometry(1.035,64,40),new THREE.MeshBasicMaterial({color:0x3da8c2,transparent:true,opacity:.08,side:THREE.BackSide}));scene.add(glow);
@@ -104,8 +104,9 @@ async function loadSnapshot(index){
   }
 }
 $('#time').addEventListener('input',event=>loadSnapshot(+event.target.value));
-function resize(){const w=viewport.clientWidth,h=viewport.clientHeight;renderer.setSize(w,h);camera.aspect=w/h;camera.updateProjectionMatrix();}
-addEventListener('resize',resize);resize();controls.target.set(-7,0,0);camera.position.set(34,46,30);controls.update();
+let previousAspect;
+function resize(){const w=viewport.clientWidth,h=viewport.clientHeight;renderer.setSize(w,h);camera.aspect=w/h;if(previousAspect){camera.position.sub(controls.target).multiplyScalar(Math.min(1,previousAspect)/Math.min(1,camera.aspect)).add(controls.target);}previousAspect=camera.aspect;camera.updateProjectionMatrix();}
+addEventListener('resize',resize);resize();controls.target.set(-7,0,0);camera.position.set(34,46,30).sub(controls.target).multiplyScalar(1/Math.min(1,camera.aspect)).add(controls.target);controls.update();
 const reducedMotion=matchMedia('(prefers-reduced-motion: reduce)');
 let lastTime=performance.now();
 function animate(now){
