@@ -6,6 +6,8 @@ ionospheric connector is appended. Scientific results are retained in HDF5.
 """
 from pathlib import Path
 import json
+import argparse
+from concurrent.futures import ProcessPoolExecutor
 import h5py
 import numpy as np
 from scipy.spatial import Delaunay
@@ -27,6 +29,10 @@ def integrate(field,seeds,sign,step=.12,nsteps=750):
         k3,g3=unit(q+.5*step*k2);k4,g4=unit(q+step*k3)
         nxt=q+step*(k1+2*k2+2*k3+k4)/6
         good=g1&g2&g3&g4&np.isfinite(nxt).all(axis=1)
+        # RK stages can be valid while the final point leaves the tetrahedral
+        # domain. Validate the accepted endpoint as well.
+        _,endpoint_good=unit(nxt)
+        good &= endpoint_good
         for k,i in enumerate(ids):
             if not good[k]:
                 alive[i]=False;reasons[i]='inner boundary' if np.linalg.norm(q[k])<2.4 else 'weak current / sampled boundary'
@@ -74,35 +80,50 @@ def choose_seeds(p,j):
         seeds.extend(p[chosen]);groups.extend([group]*len(chosen))
     return np.asarray(seeds),groups
 
+def initialize_worker(source_path):
+    global source_file,positions,tri
+    source_file=source_path
+    with h5py.File(source_path) as source:positions=source['positions'][...].astype(float)
+    tri=Delaunay(positions)
+
+def trace_one(key):
+    with h5py.File(source_file) as source:
+        g=source[key];j=g['J'][...]
+        record={'hours':float(g.attrs['model_time_s'])/3600,'model_time_s':float(g.attrs['model_time_s']),
+                'target_time_s':float(g.attrs['target_time_s']),'utc':g.attrs['utc'],
+                'step':int(g.attrs['step']),'fac':np.round(g['fac'][...],6).tolist(),'paths':[]}
+    field=LinearNDInterpolator(tri,j);seeds,groups=choose_seeds(positions,j)
+    f,fr=integrate(field,seeds,1);b,br=integrate(field,seeds,-1);arrays=[]
+    for i,(forward,backward,group) in enumerate(zip(f,b,groups)):
+        p=np.concatenate([backward[:0:-1],forward]);values=field(p)
+        if len(p)<30:continue
+        length=np.linalg.norm(np.diff(p,axis=0),axis=1).sum()
+        arrays.append(np.column_stack([p,values]))
+        record['paths'].append(dict(id=i,group=group,points=np.round(p,4).tolist(),
+            seed=np.round(seeds[i],5).tolist(),magnitude=np.round(np.linalg.norm(values,axis=1),3).tolist(),
+            length=round(float(length),2),start=br[i],end=fr[i]))
+    print(key,len(arrays),'paths complete',flush=True)
+    return key,record,arrays
+
 def main():
-    with h5py.File(ROOT/'snapshots.h5','r') as source,h5py.File(ROOT/'current_paths.h5','w') as output:
-        positions=source['positions'][...].astype(float)
-        print('Triangulating',len(positions),'unstrided cells',flush=True)
-        tri=Delaunay(positions)
+    parser=argparse.ArgumentParser();parser.add_argument('--source',type=Path,default=ROOT/'snapshots.h5')
+    parser.add_argument('--output',type=Path,default=ROOT);parser.add_argument('--workers',type=int,default=1)
+    args=parser.parse_args();args.output.mkdir(parents=True,exist_ok=True)
+    with h5py.File(args.source) as source:keys=sorted(k for k in source if k.startswith('snapshot-'))
+    if len(keys)!=10:raise ValueError('Expected ten post-burn-in snapshots')
+    with ProcessPoolExecutor(max_workers=args.workers,initializer=initialize_worker,initargs=(str(args.source),)) as pool,h5py.File(args.output/'current_paths.h5','w') as output:
         output.attrs['method']='RK4 ds=0.12 RE; linear Delaunay interpolation of unstrided GAMERA J'
         output.attrs['generator']='trace_snapshots.py';output.attrs['coordinates']='SM Cartesian; RE; J nA/m2'
         snapshots=[]
-        for hours in (6,12,18):
-            g=source[str(hours)];j=g['J'][...];field=LinearNDInterpolator(tri,j)
-            seeds,groups=choose_seeds(positions,j)
-            f,fr=integrate(field,seeds,1);b,br=integrate(field,seeds,-1)
-            record={'hours':hours,'utc':g.attrs['utc'],'frame':hours*4,'paths':[]}
-            og=output.create_group(str(hours));og.attrs['utc']=g.attrs['utc']
-            for i,(forward,backward,group) in enumerate(zip(f,b,groups)):
-                p=np.concatenate([backward[:0:-1],forward]);values=field(p)
-                if len(p)<30:continue
-                length=np.linalg.norm(np.diff(p,axis=0),axis=1).sum()
-                ds=og.create_dataset(str(i),data=np.column_stack([p,values]),compression='gzip')
-                ds.attrs['seed_group']=group;ds.attrs['start']=br[i];ds.attrs['end']=fr[i]
-                ds.attrs['seed_position']=seeds[i]
-                record['paths'].append(dict(id=i,group=group,points=np.round(p,4).tolist(),
-                    seed=np.round(seeds[i],5).tolist(),
-                    magnitude=np.round(np.linalg.norm(values,axis=1),3).tolist(),
-                    length=round(float(length),2),start=br[i],end=fr[i]))
-            filename=f'paths-{hours:02d}.json'
-            (ROOT/filename).write_text(json.dumps(record,separators=(',',':')))
-            snapshots.append(dict(hours=hours,utc=record['utc'],frame=hours*4,file=filename,count=len(record['paths'])))
-            print(hours,len(record['paths']),'paths',flush=True)
-        (ROOT/'snapshots.json').write_text(json.dumps(snapshots))
+        for key,record,arrays in pool.map(trace_one,keys):
+            og=output.create_group(key)
+            for name in ('utc','step','model_time_s','target_time_s'):og.attrs[name]=record[name]
+            for path,array in zip(record['paths'],arrays):
+                ds=og.create_dataset(str(path['id']),data=array,compression='gzip')
+                ds.attrs['seed_group']=path['group'];ds.attrs['start']=path['start'];ds.attrs['end']=path['end'];ds.attrs['seed_position']=path['seed']
+            filename=f'paths-{key}.json'
+            (args.output/filename).write_text(json.dumps(record,separators=(',',':'),allow_nan=False))
+            snapshots.append(dict(hours=record['hours'],utc=record['utc'],model_time_s=record['model_time_s'],target_time_s=record['target_time_s'],file=filename,count=len(record['paths'])))
+        (args.output/'snapshots.json').write_text(json.dumps(snapshots))
 
 if __name__=='__main__':main()

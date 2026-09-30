@@ -31,10 +31,15 @@ Serve this directory at `/gcurrents/`. It imports the vendored Three.js build
 from sibling route `/currents/vendor/`.
 # Frozen current paths
 
-The default view holds the 12-hour snapshot fixed and animates direction
-markers along J streamlines. Snapshots at 6 and 18 hours are also selectable.
-Five paths per seed region are shown initially, adjustable up to 40. Clicking a path isolates
-it; the follow-inner button selects a boundary-to-boundary path when available.
+The viewer has ten frozen snapshots with equally spaced target times from
+02:00 to 24:00 model time, excluding the first two hours as burn-in. Saved
+one-minute outputs are chosen nearest each target (within 30 seconds).
+Each snapshot's REMIX FAC comes from exactly the same saved model step as J.
+Eight spatially distributed paths per seed family are displayed. The gear
+opens a collapsed panel containing only current-family checkboxes and the
+snapshot slider. A passive legend occupies the bottom left. Curves have no
+click/selection action. The old arrow-cloud, path isolation, and metrics
+controls are removed. Data provenance remains on `about.html`.
 
 `export_snapshots.py` reads every cell centre in the selected volume from the
 24 MPI rank files (no strides), writing `snapshots.h5`. `trace_snapshots.py`
@@ -52,3 +57,14 @@ so low display counts include both flanks and hemispheres. R1/R2-like denotes
 the conventional radial-current sense at the seed, within stated latitude
 windows on the MHD shell; it is not a unique system decomposition. Ring-region
 paths use GAMERA J and do not separately reconstruct RAIJU particle currents.
+
+Regenerate the ten-snapshot product using `export_snapshots.py --source
+/path/to/output --output snapshots.h5`, then `trace_snapshots.py --source
+snapshots.h5 --output . --workers 4`. The latter runs independent snapshots
+in worker processes and serializes the combined HDF5 in the parent process.
+
+The ten-snapshot export was endpoint-validated with
+`validate_snapshot_paths.py .`: invalid terminal samples outside the
+interpolation domain were trimmed, without connecting across any internal
+gap. The integrator now checks the accepted RK4 endpoint directly, and JSON
+serialization rejects non-finite numbers.
